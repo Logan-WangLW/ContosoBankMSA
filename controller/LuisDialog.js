@@ -8,6 +8,89 @@ exports.startDialog = function (bot) {
 
     bot.recognizer(recognizer);
 
+    // display welcome message and commands on start up
+    // display welcome message
+    // adapted from Contoso flowers sample
+    bot.on('conversationUpdate', function (message) {
+        if (message.membersAdded) {
+            message.membersAdded.forEach(function (identity) {
+                if (identity.id === message.address.bot.id) {
+                    var welcomeMessage = new builder.Message()
+                    .address(message.address)
+                    .text("Welcome! I am Count, the Contoso Bank Bot. Below is a list of things that I can do!");
+                    bot.send(welcomeMessage);
+                    
+                    //go into commands function
+                    bot.beginDialog(message.address, 'Commands');
+                }
+            });
+        }
+    });
+
+    //commands help message using adpative cards
+    // ** add images **
+    bot.dialog('Commands', function (session) {
+        session.send(new builder.Message(session).addAttachment({
+            contentType: "application/vnd.microsoft.card.adaptive",
+            content:
+            {
+                "type": "AdaptiveCard",
+                "version": "1.0",
+                "body": [
+                    {
+                        "wrap": true,
+                        "type": "TextBlock",
+                        "text": "\"My account\" or \"view account\"",
+                        "size": "large"
+                    },
+                    {
+                        "wrap": true,
+                        "type": "TextBlock",
+                        "text": "*See recent transactions and ability to read, create and delete accounts*",
+
+                    },
+                    {
+                        "wrap": true,
+                        "type": "TextBlock",
+                        "text": "\"Foreign exchange\" or \"currency conversion\"" ,
+                        "size": "large"
+                    },
+                    {
+                        "wrap": true,
+                        "type": "TextBlock",
+                        "text": "*Ability to convert different curriences*",
+
+                    },
+                    {
+                        "wrap": true,
+                        "type": "TextBlock",
+                        "text": "\"branches\"",
+                        "size": "large"
+                    },
+                    {
+                        "wrap": true,
+                        "type": "TextBlock",
+                        "text": "*provides a list of branches*",
+
+                    },
+                    {
+                        "wrap": true,
+                        "type": "TextBlock",
+                        "text": "You can also upload images of notes or coins to identify the currency",
+
+                    },
+                    {
+                        "wrap": true,
+                        "type": "TextBlock",
+                        "text": "Ask me common FAQs by typing \"QnA database\" and asking questions, I may be able to answer using the QnA database!",
+                    },
+                ]
+            }
+        }));
+    }).triggerAction({
+        matches: 'Commands'
+    });
+
     bot.dialog('GetAccount', function (session, args) {
 
 
@@ -26,52 +109,28 @@ exports.startDialog = function (bot) {
         matches: 'GetAccount'
     });
 
-    bot.dialog('CreatePayees', function (session, args) {
+    bot.dialog('CreateAccount', function (session, args) {
         
-        session.send("CreatePayees intent found");
+        session.send("CreateAccount intent found");
     
     }).triggerAction({
-        matches: 'CreatePayees'
+        matches: 'CreateAccount'
     });
 
-    bot.dialog('GetPayees', function (session, args) {
+    bot.dialog('DeleteAccount', function (session, args) {
         
-        session.send("GetPayees intent found");
+        session.send("DeleteAccount intent found");
     
     }).triggerAction({
-        matches: 'GetPayees'
-    });
-
-    bot.dialog('UpdatePayees', function (session, args) {
-        
-        session.send("UpdatePayees intent found");
-    
-    }).triggerAction({
-        matches: 'UpdatePayees'
-    });
-
-    bot.dialog('DeletePayees', function (session, args) {
-        
-        session.send("DeletePayees intent found");
-    
-    }).triggerAction({
-        matches: 'DeletePayees'
+        matches: 'DeleteAccount'
     });
 
     bot.dialog('ForeignExchange', function (session, args) {
         
-        session.send("ForeignExchange");
+        session.send("ForeignExchange intent found");
     
     }).triggerAction({
         matches: 'ForeignExchange'
-    });
-
-    bot.dialog('Welcome', function (session, args) {
-        
-        session.send("Welcome intent found");
-    
-    }).triggerAction({
-        matches: 'Welcome'
     });
 
     bot.dialog('GetBranch', function (session, args) {
@@ -82,20 +141,12 @@ exports.startDialog = function (bot) {
         matches: 'GetBranch'
     });
 
-    bot.dialog('GetTransactions', function (session, args) {
+    bot.dialog('QnA', function (session, args) {
         
-        session.send("GetTransactions intent found");
+        session.send("QnA intent found");
     
     }).triggerAction({
-        matches: 'GetTransactions'
-    });
-
-    bot.dialog('LookForATM', function (session, args) {
-        
-        session.send("LookForATM intent found");
-    
-    }).triggerAction({
-        matches: 'LookForATM'
+        matches: 'QnA'
     });
 
 }
