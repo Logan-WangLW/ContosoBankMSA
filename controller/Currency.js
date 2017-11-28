@@ -9,8 +9,9 @@ exports.displayCurrencies = function (session,  baseCurrency){
 
 function calculateCurrencies(message, session, baseCurrency){
 
+    //JSON parse
     var exchangeRateList = JSON.parse(message).rates;    
-
+        //Get all currencies and put into list
         var currenciesList = [];
         for (var key in exchangeRateList){
             var currencyItem = {};
@@ -19,7 +20,7 @@ function calculateCurrencies(message, session, baseCurrency){
             currenciesList.push(currencyItem);
         }
         console.log(currenciesList);
-
+        //create adaptive card to view currencies on
         session.send(new builder.Message(session).addAttachment({
             contentType: "application/vnd.microsoft.card.adaptive",
             content: {

@@ -35,6 +35,7 @@ bot.on('conversationUpdate', function (message) {
                 var welcomeMessage = new builder.Message()
                 .address(message.address)
                 .text("Welcome! I am Count, the Contoso Bank Bot. Type 'commands list' for a list of things I can do!");
+                //different language implementation
                 bot.send(welcomeMessage);
             }
         });

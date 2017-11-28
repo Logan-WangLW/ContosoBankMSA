@@ -14,8 +14,7 @@ exports.startDialog = function (bot) {
 
     bot.recognizer(recognizer);
 
-    //commands help message using adpative cards
-    // ** add images **
+    //commands help message using adpative cards, a list of all commands available
     bot.dialog('Commands', function (session) {
         if(!isAttachment(session)){
         session.send(new builder.Message(session).addAttachment({
@@ -34,43 +33,67 @@ exports.startDialog = function (bot) {
                     {
                         "wrap": true,
                         "type": "TextBlock",
-                        "text": "*See recent transactions (\"transactions\") and ability to read, create and delete accounts*",
+                        "text": "*See available accounts*",
 
                     },
                     {
                         "wrap": true,
                         "type": "TextBlock",
-                        "text": "\"Foreign exchange\" or \"currency conversion\"" ,
+                        "text": "\"transactions\"",
                         "size": "large"
                     },
                     {
                         "wrap": true,
                         "type": "TextBlock",
-                        "text": "*Ability to convert different curriences*",
+                        "text": "*list of recent transactions*",
 
                     },
                     {
                         "wrap": true,
                         "type": "TextBlock",
-                        "text": "\"branches\"",
+                        "text": "\"create account\" or \"create savings\"",
                         "size": "large"
                     },
                     {
                         "wrap": true,
                         "type": "TextBlock",
-                        "text": "*provides a list of branches*",
+                        "text": "*create new accounts*",
 
                     },
                     {
                         "wrap": true,
                         "type": "TextBlock",
-                        "text": "You can also upload images of notes or coins to identify the currency",
+                        "text": "\"delete account\" or \"delete credit\"",
+                        "size": "large"
+                    },
+                    {
+                        "wrap": true,
+                        "type": "TextBlock",
+                        "text": "*delete accounts*",
 
                     },
                     {
                         "wrap": true,
                         "type": "TextBlock",
-                        "text": "Ask me common FAQs by typing \"QnA database\" and asking questions, I may be able to answer using the QnA database!",
+                        "text": "\"convert NZD\" or \"convert USD\"" ,
+                        "size": "large"
+                    },
+                    {
+                        "wrap": true,
+                        "type": "TextBlock",
+                        "text": "*View current currency rates for currency specified*",
+
+                    },
+                    {
+                        "wrap": true,
+                        "type": "TextBlock",
+                        "text": "You can also link images of notes or coins to identify the currency",
+
+                    },
+                    {
+                        "wrap": true,
+                        "type": "TextBlock",
+                        "text": "Type \"logout\" or \"exit\" to log out of your account",
                     },
                 ]
             }
@@ -237,13 +260,15 @@ exports.startDialog = function (bot) {
 
     bot.dialog('Currency', function (session, args) {
         if (!isAttachment(session)) {
+            // Pulls out baseCurrency entity from the session if it exists
             var baseCurrency = builder.EntityRecognizer.findEntity(args.intent.entities, 'base');
-
+            // Checks if base entity was found
             if (baseCurrency) {
                 baseCurrency = baseCurrency.entity.toUpperCase();
                     session.send('%s...', baseCurrency);
                     exchange.displayCurrencies(session, baseCurrency);
             } else {
+                //if not found then display below
                 session.send("Currency unidentified, re-enter currency code");
             }
         }

@@ -14,7 +14,7 @@ function handleGetTransactionResponse(message, session, username) {
 
         //Convert to lower case whilst doing comparison to ensure the user can type whatever they like
         if (username.toLowerCase() === usernameReceived.toLowerCase()) {
-            //Add a comma after all favourite foods unless last one
+            //Add a comma after all transactions unless last one
             if(getTransactionResponse.length - 1) {
                 allTransactions.push(transactions);
             }
@@ -24,7 +24,7 @@ function handleGetTransactionResponse(message, session, username) {
         }        
     }
     
-    // Print all favourite foods for the user that is currently logged in
+    // Print all transactions for the user that is currently logged in
     session.send("%s, your Transactions are: %s", username, allTransactions);                
     
 }

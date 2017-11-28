@@ -26,7 +26,7 @@ function handleGetAccountResponse(message, session, username) {
         }        
     }
     
-    // Print all favourite foods for the user that is currently logged in
+    // Print all accounts for the user that is currently logged in
     session.send("%s, your accounts are: %s", username, allAccounts);                
     
 }
