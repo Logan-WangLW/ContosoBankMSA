@@ -95,6 +95,26 @@ exports.startDialog = function (bot) {
         matches: 'Commands'
     });
 
+    bot.dialog('EndSession',[
+    function (session, args, next) {
+        session.dialogData.args = args || {};     
+        //detects if theres any session currently running   
+        if (!session.conversationData["username"]) { 
+            session.endDialog("There is currently no user logged in");                
+        } else {
+            next(); 
+        }
+    },
+    function (session, results, next) {
+            //exits session
+            delete session.conversationData["username"]; 
+            session.endDialog("You have been logged out");
+        
+    }
+    ]).triggerAction({
+    matches: 'EndSession'
+    });
+
     bot.dialog('GetAccount', [
         function (session, args, next) {
             session.dialogData.args = args || {};        

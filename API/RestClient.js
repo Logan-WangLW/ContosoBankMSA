@@ -66,3 +66,13 @@ exports.deleteAccount = function deleteData(url,session, username ,accounts, id,
     })
 
 };
+
+exports.branchLocations = function getData(url, bearer, session, callback){
+    request.get(url, {'auth': { 'bearer': bearer}}, function(err, res, body){
+        if(err){
+            console.log(err);
+        }else {
+            callback(body, session);
+        }
+    });
+};
