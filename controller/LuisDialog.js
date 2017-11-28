@@ -2,6 +2,7 @@ var builder = require('botbuilder');
 var allAccounts = require('./GetAccount');
 var allTransactions = require('./GetTransactions');
 var manageAccounts = require('./ManageAccounts');
+var exchange = require('./Currency');
 
 // Some sections have been omitted
 
@@ -244,28 +245,21 @@ exports.startDialog = function (bot) {
         matches: 'DeleteAccount'
     });
 
-    bot.dialog('ForeignExchange', function (session, args) {
-        
-        session.send("ForeignExchange intent found");
-    
+    bot.dialog('Currency', function (session, args) {
+        //if (!isAttachment(session)) {
+            var baseCurrency = builder.EntityRecognizer.findEntity(args.intent.entities, 'base');
+
+            if (baseCurrency) {
+                baseCurrency = baseCurrency.entity.toUpperCase();
+                    session.send('%s...', baseCurrency);
+                    exchange.displayCurrencies(session, baseCurrency);
+            } else {
+                session.send("Currency unidentified, re-enter currency code");
+            }
+        //}
     }).triggerAction({
-        matches: 'ForeignExchange'
+        matches: 'Currency'
     });
 
-    bot.dialog('GetBranch', function (session, args) {
-        
-        session.send("GetBranch intent found");
-    
-    }).triggerAction({
-        matches: 'GetBranch'
-    });
-
-    bot.dialog('QnA', function (session, args) {
-        
-        session.send("QnA intent found");
-    
-    }).triggerAction({
-        matches: 'QnA'
-    });
 
 }
