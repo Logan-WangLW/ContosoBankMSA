@@ -3,6 +3,7 @@ var allAccounts = require('./GetAccount');
 var allTransactions = require('./GetTransactions');
 var manageAccounts = require('./ManageAccounts');
 var exchange = require('./Currency');
+var customVision = require('./CustomVision');
 
 // Some sections have been omitted
 
@@ -13,28 +14,10 @@ exports.startDialog = function (bot) {
 
     bot.recognizer(recognizer);
 
-    // display welcome message and commands on start up
-    // display welcome message
-    // adapted from Contoso flowers sample
-    bot.on('conversationUpdate', function (message) {
-        if (message.membersAdded) {
-            message.membersAdded.forEach(function (identity) {
-                if (identity.id === message.address.bot.id) {
-                    var welcomeMessage = new builder.Message()
-                    .address(message.address)
-                    .text("Welcome! I am Count, the Contoso Bank Bot. Below is a list of things that I can do!");
-                    bot.send(welcomeMessage);
-                    
-                    //go into commands function
-                    bot.beginDialog(message.address, 'Commands');
-                }
-            });
-        }
-    });
-
     //commands help message using adpative cards
     // ** add images **
     bot.dialog('Commands', function (session) {
+        if(!isAttachment(session)){
         session.send(new builder.Message(session).addAttachment({
             contentType: "application/vnd.microsoft.card.adaptive",
             content:
@@ -92,7 +75,9 @@ exports.startDialog = function (bot) {
                 ]
             }
         }));
-    }).triggerAction({
+    }
+}
+    ).triggerAction({
         matches: 'Commands'
     });
 
@@ -108,11 +93,13 @@ exports.startDialog = function (bot) {
     },
     function (session, results, next) {
             //exits session
+            if(!isAttachment(session)){
+
             delete session.conversationData["username"]; 
             session.endDialog("You have been logged out");
         
-    }
-    ]).triggerAction({
+            }
+    }]).triggerAction({
     matches: 'EndSession'
     });
 
@@ -126,7 +113,7 @@ exports.startDialog = function (bot) {
             }
         },
         function (session, results, next) {
-            //if (!isAttachment(session)) {
+            if (!isAttachment(session)) {
 
                 if (results.response) {
                     session.conversationData["username"] = results.response;
@@ -135,7 +122,7 @@ exports.startDialog = function (bot) {
                 session.send("Retrieving your accounts...");
                 allAccounts.displayAccounts(session, session.conversationData["username"]);  // <---- THIS LINE HERE IS WHAT WE NEED 
             }
-        //}
+        }
     ]).triggerAction({
         matches: 'GetAccount'
     });
@@ -150,7 +137,7 @@ exports.startDialog = function (bot) {
             }
         },
         function (session, results, next) {
-            //if (!isAttachment(session)) {
+            if (!isAttachment(session)) {
 
                 if (results.response) {
                     session.conversationData["username"] = results.response;
@@ -159,7 +146,7 @@ exports.startDialog = function (bot) {
                 session.send("Retrieving your recent transactions...");
                 allTransactions.displayTransactions(session, session.conversationData["username"]);  // <---- THIS LINE HERE IS WHAT WE NEED 
             }
-        //}
+        }
     ]).triggerAction({
         matches: 'GetTransactions'
     });
@@ -174,7 +161,7 @@ exports.startDialog = function (bot) {
             }
         },
         function (session, results, next) {
-           // if (!isAttachment(session)) {
+            if(!isAttachment(session)){
                 if (results.response) {
                     session.conversationData["username"] = results.response;     
                }
@@ -189,9 +176,11 @@ exports.startDialog = function (bot) {
                 } else {
                     builder.Prompts.text(session,"What would be the account type?");
                 }
-            },
+            }
+        },
             function(session,results,next)
             {
+                if(!isAttachment(session)){
                 if (results.response){
                     session.send('Creating new account...');
                     session.conversationData["accounts"] = results.response;
@@ -199,7 +188,7 @@ exports.startDialog = function (bot) {
                session.send('Created new account:  %s', session.conversationData["accounts"]);
                manageAccounts.addNewAccount(session,session.conversationData["username"], session.conversationData["accounts"]);
             }
-       // }
+       }
        
     ]).triggerAction({
         matches: 'CreateAccount'
@@ -215,7 +204,7 @@ exports.startDialog = function (bot) {
             }
         },
         function (session, results, next) {
-           // if (!isAttachment(session)) {
+           if (!isAttachment(session)) {
                 if (results.response) {
                     session.conversationData["username"] = results.response;     
                }
@@ -229,9 +218,10 @@ exports.startDialog = function (bot) {
                 }else{
                     builder.Prompts.text(session,"Which account would you like to delete?");
                 }
-            },
+            }},
                 function(session,results,next)
                 {
+                    if(!isAttachment(session)){
                     if(results.response){
                         session.send('Deleting account...');
                         session.conversationData["accounts"] = results.response;
@@ -240,13 +230,13 @@ exports.startDialog = function (bot) {
                 session.send("Deleted account: %s",session.conversationData["accounts"]);
                 manageAccounts.deleteAccount(session, session.conversationData["username"], session.conversationData["accounts"]); // <-- LINE WE WANT
                 }
-            
+            }
     ]).triggerAction({
         matches: 'DeleteAccount'
     });
 
     bot.dialog('Currency', function (session, args) {
-        //if (!isAttachment(session)) {
+        if (!isAttachment(session)) {
             var baseCurrency = builder.EntityRecognizer.findEntity(args.intent.entities, 'base');
 
             if (baseCurrency) {
@@ -256,10 +246,23 @@ exports.startDialog = function (bot) {
             } else {
                 session.send("Currency unidentified, re-enter currency code");
             }
-        //}
+        }
     }).triggerAction({
         matches: 'Currency'
     });
 
 
+}
+
+function isAttachment(session) { 
+    var msg = session.message.text;
+    if ((session.message.attachments && session.message.attachments.length > 0) || msg.includes("http")) {
+        //call custom vision
+        customVision.retreiveMessage(session);
+
+        return true;
+    }
+    else {
+        return false;
+    }
 }
