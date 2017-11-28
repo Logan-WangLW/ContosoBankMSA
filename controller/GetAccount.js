@@ -14,8 +14,10 @@ function handleGetAccountResponse(message, session, username) {
 
         //Convert to lower case whilst doing comparison to ensure the user can type whatever they like
         if (username.toLowerCase() === usernameReceived.toLowerCase()) {
-            //Add a comma after all favourite foods unless last one
+            //Add a comma after all accounts unless last one
             if(getAccountResponse.length - 1) {
+                allAccounts.push(accounts);
+            } else if(getAccountResponose == ""){
                 allAccounts.push(accounts);
             }
             else {

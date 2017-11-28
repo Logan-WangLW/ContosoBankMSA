@@ -1,6 +1,7 @@
 var builder = require('botbuilder');
 var allAccounts = require('./GetAccount');
 var allTransactions = require('./GetTransactions');
+var manageAccounts = require('./ManageAccounts');
 
 // Some sections have been omitted
 
@@ -134,7 +135,7 @@ exports.startDialog = function (bot) {
                     session.conversationData["username"] = results.response;
                 }
 
-                session.send("Retrieving your transactions...");
+                session.send("Retrieving your recent transactions...");
                 allTransactions.displayTransactions(session, session.conversationData["username"]);  // <---- THIS LINE HERE IS WHAT WE NEED 
             }
         //}
@@ -142,22 +143,84 @@ exports.startDialog = function (bot) {
         matches: 'GetTransactions'
     });
 
-    bot.dialog('CreateAccount', function (session, args) {
-        
-        session.send("CreateAccount intent found");
+    bot.dialog('CreateAccount', [
+        function (session, args, next) {
+            session.dialogData.args = args || {};        
+            if (!session.conversationData["username"]) {
+                builder.Prompts.text(session, "Can I have your username please");                
+            } else {
+                next(); // Skip if we already have this info.
+            }
+        },
+        function (session, results, next) {
+           // if (!isAttachment(session)) {
+                if (results.response) {
+                    session.conversationData["username"] = results.response;     
+               }
+                // Pulls out account entity from the session if it exists
+                var accountEntity = builder.EntityRecognizer.findEntity(session.dialogData.args.intent.entities, 'accounts');
     
-    }).triggerAction({
+                // Checks if the acount entity was found
+                if (accountEntity) {
+                session.conversationData["accounts"] = accountEntity.entity;
+                  next();            
+
+                } else {
+                    builder.Prompts.text(session,"What would be the account type?");
+                }
+            },
+            function(session,results,next)
+            {
+                if (results.response){
+                    session.send('Creating new account...');
+                    session.conversationData["accounts"] = results.response;
+                }
+               session.send('Created new account:  %s', session.conversationData["accounts"]);
+               manageAccounts.addNewAccount(session,session.conversationData["username"], session.conversationData["accounts"]);
+            }
+       // }
+       
+    ]).triggerAction({
         matches: 'CreateAccount'
     });
 
-
-
-
-    bot.dialog('DeleteAccount', function (session, args) {
-        
-        session.send("DeleteAccount intent found");
+    bot.dialog('DeleteAccount', [
+        function (session, args, next) {
+            session.dialogData.args = args || {};        
+            if (!session.conversationData["username"]) {
+                builder.Prompts.text(session, "Can I have your username please");                
+            } else {
+                next(); // Skip if we already have this info.
+            }
+        },
+        function (session, results, next) {
+           // if (!isAttachment(session)) {
+                if (results.response) {
+                    session.conversationData["username"] = results.response;     
+               }
+                // Pulls out account entity from the session if it exists
+                var accountEntity = builder.EntityRecognizer.findEntity(session.dialogData.args.intent.entities, 'accounts');
     
-    }).triggerAction({
+                // Checks if the account entity was found
+                if (accountEntity) {
+                session.conversationData["accounts"] = accountEntity.entity;
+                next();
+                }else{
+                    builder.Prompts.text(session,"Which account would you like to delete?");
+                }
+            },
+                function(session,results,next)
+                {
+                    if(results.response){
+                        session.send('Deleting account...');
+                        session.conversationData["accounts"] = results.response;
+                    }
+                
+                session.send("Deleted account: %s",session.conversationData["accounts"]);
+                manageAccounts.deleteAccount(session, session.conversationData["username"], session.conversationData["accounts"]); // <-- LINE WE WANT
+                }
+            
+    ]).triggerAction({
         matches: 'DeleteAccount'
     });
 
