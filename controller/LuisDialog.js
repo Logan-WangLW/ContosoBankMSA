@@ -1,4 +1,7 @@
 var builder = require('botbuilder');
+var allAccounts = require('./GetAccount');
+var allTransactions = require('./GetTransactions');
+
 // Some sections have been omitted
 
 exports.startDialog = function (bot) {
@@ -46,7 +49,7 @@ exports.startDialog = function (bot) {
                     {
                         "wrap": true,
                         "type": "TextBlock",
-                        "text": "*See recent transactions and ability to read, create and delete accounts*",
+                        "text": "*See recent transactions (\"transactions\") and ability to read, create and delete accounts*",
 
                     },
                     {
@@ -91,22 +94,52 @@ exports.startDialog = function (bot) {
         matches: 'Commands'
     });
 
-    bot.dialog('GetAccount', function (session, args) {
-
-
-            // Pulls out the account entity from the session if it exists
-            var accountEntity = builder.EntityRecognizer.findEntity(args.intent.entities, 'account');
-
-            // Checks if the for entity was found
-            if (accountEntity) {
-                session.send('Your account is:', accountEntity.entity);
-
+    bot.dialog('GetAccount', [
+        function (session, args, next) {
+            session.dialogData.args = args || {};        
+            if (!session.conversationData["username"]) {
+                builder.Prompts.text(session, "Can I have your username please");                
             } else {
-                session.send("No Account identified, try again!");
+                next(); // Skip if we already have this info.
             }
- 
-    }).triggerAction({
+        },
+        function (session, results, next) {
+            //if (!isAttachment(session)) {
+
+                if (results.response) {
+                    session.conversationData["username"] = results.response;
+                }
+
+                session.send("Retrieving your accounts...");
+                allAccounts.displayAccounts(session, session.conversationData["username"]);  // <---- THIS LINE HERE IS WHAT WE NEED 
+            }
+        //}
+    ]).triggerAction({
         matches: 'GetAccount'
+    });
+
+    bot.dialog('GetTransactions', [
+        function (session, args, next) {
+            session.dialogData.args = args || {};        
+            if (!session.conversationData["username"]) {
+                builder.Prompts.text(session, "Can I have your username please");                
+            } else {
+                next(); // Skip if we already have this info.
+            }
+        },
+        function (session, results, next) {
+            //if (!isAttachment(session)) {
+
+                if (results.response) {
+                    session.conversationData["username"] = results.response;
+                }
+
+                session.send("Retrieving your transactions...");
+                allTransactions.displayTransactions(session, session.conversationData["username"]);  // <---- THIS LINE HERE IS WHAT WE NEED 
+            }
+        //}
+    ]).triggerAction({
+        matches: 'GetTransactions'
     });
 
     bot.dialog('CreateAccount', function (session, args) {
@@ -116,6 +149,9 @@ exports.startDialog = function (bot) {
     }).triggerAction({
         matches: 'CreateAccount'
     });
+
+
+
 
     bot.dialog('DeleteAccount', function (session, args) {
         
